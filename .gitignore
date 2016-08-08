@@ -1,0 +1,22 @@
+.gradle
+build/
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# IntelliJ IDEA project
+.idea/modules
+.idea/libraries
+.idea/copyright
+.idea/workspace.xml
+.idea/uiDesigner.xml
+.idea/modules.xml
+.idea/gradle.xml
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/vcs.xml
+.idea/misc.xml
+.idea/typing_corrector_settings.xml
+
+# NPM
+node_modules
