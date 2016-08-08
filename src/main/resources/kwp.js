@@ -48,7 +48,7 @@ module.exports = function(content) {
         }
         else {
             // console.log(stdout)
-            var deps = fs.readFileSync(path.resolve('build/kjs/__deps.txt'), "UTF-8").split("\n")
+            var deps = fs.readFileSync(path.resolve('build/kwp/__deps.txt'), "UTF-8").split("\n")
 
             for (var i = 0; i < deps.length; i++) {
                 var t = deps[i].trim()
@@ -57,7 +57,7 @@ module.exports = function(content) {
                 }
             }
 
-            success(fs.readFileSync(path.resolve('build/kjs/__modules.js'), "UTF-8"))
+            success(fs.readFileSync(path.resolve('build/kwp/__modules.js'), "UTF-8"))
             console.timeEnd("Done Gradle")
         }
     })
