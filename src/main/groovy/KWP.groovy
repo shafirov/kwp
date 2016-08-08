@@ -1,14 +1,13 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
-import org.gradle.api.tasks.bundling.Jar
 
 import java.util.zip.ZipFile
 
 class KWP implements Plugin<Project> {
     @Override
     void apply(Project target) {
-        target.task(dependsOn: Jar, 'webpack_loader') << {
+        target.task(dependsOn: jar, 'webpack_loader') << {
             def dependencies = new LinkedHashSet<File>()
             def sources = new LinkedHashSet<String>()
             collectDependencies(project, sources, dependencies)
