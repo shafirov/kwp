@@ -54,3 +54,5 @@ bintray {
         vcsUrl = 'https://github.com/shafirov/kwp.git'
     }
 }
+
+afterReleaseBuild.dependsOn bintrayUpload
