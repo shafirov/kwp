@@ -28,7 +28,7 @@ class KWP implements Plugin<Project> {
             writeSafely(new File(targetDir, "__modules.js")) { buf ->
                 dependencies.each {jar ->
                     def m = unzipSafely(jar, targetDir)
-                    buf.append("require('${m.absolutePath}');\n")
+                    buf.append("require('${normalizedAbsolutePath(m)}');\n")
                 }
             }
 
@@ -51,7 +51,7 @@ class KWP implements Plugin<Project> {
         dependencies.addAll(configuration.resolve())
         dependencies.addAll(configuration.allArtifacts.files)
 
-        sources.add(new File(project.projectDir, "src/main/kotlin").getAbsolutePath())
+        sources.add(normalizedAbsolutePath(new File(project.projectDir, "src/main/kotlin")))
     }
 
     File unzipSafely(File jar, File targetFolder) {
@@ -90,5 +90,9 @@ class KWP implements Plugin<Project> {
         builder(buffer)
         def contents = buffer.toString()
         if (!file.exists() || file.text != contents) file.text = contents
+    }
+
+    String normalizedAbsolutePath(File file) {
+        return file.absolutePath.replace('\\', '/')
     }
 }
