@@ -5,11 +5,12 @@ import org.gradle.api.artifacts.ProjectDependency
 import java.util.zip.ZipFile
 
 class KWP implements Plugin<Project> {
+    private static def loaderText = KWP.class.getResourceAsStream("/kwp.js").text
+
     @Override
     void apply(Project target) {
         def rootProject = target.rootProject
         def targetDir = new File(rootProject.buildDir, "kwp")
-        def loaderText = getClass().getResourceAsStream("/kwp.js").text
 
         rootProject.afterEvaluate {
             targetDir.mkdirs()

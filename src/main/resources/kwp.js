@@ -18,9 +18,10 @@ module.exports = function(content) {
     }
 
     var buildFile = path.resolve(loader.resourcePath);
+    var root = path.relative(buildFile, "../")
     var project = loader.resourceQuery.substr(1)
 
-    var gradle = "./gradlew"
+    var gradle = path.join(root, "gradlew")
     if (isWin) {
         gradle += ".bat"
     }
@@ -48,7 +49,7 @@ module.exports = function(content) {
         }
         else {
             // console.log(stdout)
-            var deps = fs.readFileSync(path.resolve('build/kwp/__deps.txt'), "UTF-8").split("\n")
+            var deps = fs.readFileSync(path.join(root, 'build/kwp/__deps.txt'), "UTF-8").split("\n")
 
             for (var i = 0; i < deps.length; i++) {
                 var t = deps[i].trim()
@@ -57,7 +58,7 @@ module.exports = function(content) {
                 }
             }
 
-            success(fs.readFileSync(path.resolve('build/kwp/__modules.js'), "UTF-8"))
+            success(fs.readFileSync(path.join(root, 'build/kwp/__modules.js'), "UTF-8"))
             console.timeEnd("Done Gradle")
         }
     })
