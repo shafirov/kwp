@@ -18,7 +18,7 @@ module.exports = function(content) {
     }
 
     var buildFile = path.resolve(loader.resourcePath);
-    var root = path.relative(buildFile, "../")
+    var root = path.join(buildFile, "../")
     var project = loader.resourceQuery.substr(1)
 
     var gradle = path.join(root, "gradlew")
