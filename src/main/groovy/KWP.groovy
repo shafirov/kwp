@@ -7,16 +7,27 @@ import java.util.zip.ZipFile
 class KWP implements Plugin<Project> {
     private static def loaderText = KWP.class.getResourceAsStream("/kwp.js").text
 
+    void installKwp(File targetDir, boolean force) {
+        def file = new File(targetDir, "kwp.js")
+        if (!file.exists() || force) {
+            targetDir.mkdirs()
+            writeSafely(file) { buf ->
+                buf.append(loaderText)
+            }
+        }
+    }
+
     @Override
     void apply(Project target) {
         def rootProject = target.rootProject
         def targetDir = new File(rootProject.buildDir, "kwp")
 
         rootProject.afterEvaluate {
-            targetDir.mkdirs()
-            writeSafely(new File(targetDir, "kwp.js")) { buf ->
-                buf.append(loaderText)
-            }
+            installKwp(targetDir, true)
+        }
+
+        target.tasks['jar'] << {
+            installKwp(targetDir, false)
         }
 
         target.task(dependsOn: 'jar', 'webpack_loader') << {
