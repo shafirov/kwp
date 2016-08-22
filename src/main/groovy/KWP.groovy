@@ -74,7 +74,7 @@ class KWP implements Plugin<Project> {
             for (zipEntry in zip.entries()) {
                 if (zipEntry.isDirectory()) continue
 
-                if (zipEntry.name.endsWith(".meta.js")) {
+                if (zipEntry.name.endsWith(".meta.js") || zipEntry.name.endsWith('.js.map')) {
                     new File(targetFolder, zipEntry.name).text = zip.getInputStream(zipEntry).text
                     targets++
                 }
@@ -83,7 +83,7 @@ class KWP implements Plugin<Project> {
                     targets++
                 }
 
-                if (targets == 2) break
+                if (targets == 3) break
             }
 
             targetFile.setLastModified(jar.lastModified())
