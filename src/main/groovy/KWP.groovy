@@ -26,7 +26,7 @@ class KWP implements Plugin<Project> {
             installKwp(targetDir, true)
         }
 
-        target.tasks['jar'] << {
+        rootProject.tasks['clean'] << {
             installKwp(targetDir, false)
         }
 
@@ -37,14 +37,18 @@ class KWP implements Plugin<Project> {
 
             targetDir.mkdirs()
 
-            writeSafely(new File(targetDir, "__modules.js")) { buf ->
+            writeSafely(new File(targetDir, "__modules.txt")) { buf ->
                 dependencies.each {jar ->
                     def m = unzipSafely(jar, targetDir)
-                    buf.append("require('${normalizedAbsolutePath(m)}');\n")
+                    def moduleName = m.name.substring(0, m.name.lastIndexOf('.'))
+                    if (moduleName.startsWith("kotlin-js-library")) {
+                        moduleName = "kotlin"
+                    }
+                    buf.append("${ moduleName}:${normalizedAbsolutePath(m)}\n")
                 }
             }
 
-            writeSafely(new File(targetDir, "__deps.txt")) { buf ->
+            writeSafely(new File(targetDir, "__sources.txt")) { buf ->
                 sources.each {
                     buf.append("$it\n")
                 }

@@ -1,10 +1,9 @@
 # kwp
-webpack loader for javascript artifacts produced by Kotlin.JS Gradle builds
+webpack plugin for resolving modules produced by Kotlin.JS Gradle builds
 
 This comes as Gradle plugin, which adds webpack_loader task to a project, which scans project jar artifacts for generated javascript files
-and generates a module to require them in proper order.
-
-Also this provides a webpack loader, that handles build.gradle files and accepts gradle project name as query parameter to require request.
+as well as Webpack plugin, which declares an alias for each Kotlin module to it resulting javascript output. Webpack plugin is also watching
+Kotlin sourcefiles and launches Webpack build appropriately.
 
 For example of usage please look at https://github.com/shafirov/kwp-sample
 
@@ -19,7 +18,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kwp:kwp:0.1.5"
+        classpath "org.jetbrains.kwp:kwp:0.1.7"
     }
 }
 ```
@@ -33,33 +32,20 @@ This is it for gradle part of setup. Now you need to hook up a loader that comes
 define ```Kotlin``` global via ProvidePlugin.
 
 ```javascript
-var path = require('path');
+var KotlinWebpackPlugin = require('./build/kwp/kwp')
 
 var webpackConfig = {
   ...
-  module: {
-    loaders: [
-      {
-        test: /\.gradle\?.*$/,
-        loaders: [
-          './build/kwp/kwp'
-        ]
-      }
-    ]
-  }
-
-  ...
-
     plugins: [
-      new webpack.ProvidePlugin({
-        Kotlin: path.join(__dirname, 'build/kwp/kotlin-js-library-1.0.2-1.js')
+      new KotlinWebpackPlugin({
+        buildFile: './build.gradle',
+        project: 'showcase'
       })
     ]
 ```
 
-As of Kotlin 1.0.3 Kotlin.js modules do not export anything so you won't be able to use Kotlin code from javascript modules easily.
-So you just require some Kotlin modules to be included in webpack build target for now:
+Then you can just require some Kotlin modules:
 
 ```javascript
-require('./build.gradle?projectname')
+require('showcase')
 ```

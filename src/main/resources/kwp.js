@@ -1,26 +1,28 @@
 var path = require("path");
 var fs = require('fs')
-var exec = require('child_process').exec
-
+var execSync = require('child_process').execSync
 var isWin = /^win/.test(process.platform);
 
-module.exports = function(content) {
-    var loader = this
-    loader.cacheable()
-    var callback = loader.async()
+var ModuleAliasPlugin = require("webpack/node_modules/enhanced-resolve/lib/ModuleAliasPlugin");
 
-    var fail = function(message) {
-        callback(message)
+function KotlinWebpackPlugin(options) {
+    this.options = options
+}
+
+KotlinWebpackPlugin.prototype.apply = function (compiler) {
+    var buildFile = path.resolve(compiler.context, this.options.buildFile)
+    if (!buildFile) {
+        console.error("Cannot resolve build file: ", this.options.buildFile)
+        return
     }
 
-    var success = function (res, map) {
-        callback(null, res, map)
+    var project = this.options.project
+    if (!project) {
+        console.error("kwp needs 'buildFile' and 'project' properties specified")
+        return
     }
 
-    var buildFile = path.resolve(loader.resourcePath);
     var root = path.join(buildFile, "../")
-    var project = loader.resourceQuery.substr(1)
-
     var gradle = path.join(root, "gradlew")
     if (isWin) {
         gradle += ".bat"
@@ -28,38 +30,51 @@ module.exports = function(content) {
 
     gradle = path.resolve(gradle)
     if (!gradle) {
-        fail("Cannot find ./gradlew")
+        console.error("Cannot find ./gradlew")
         return
     }
 
-    if (!buildFile) {
-        fail("Cannot resolve build file: " + buildArg)
-        return
-    }
-
-    console.time("Done Gradle")
     var cmdline = gradle + " " + "--build-file " + buildFile + " " + project + ":webpack_loader";
-    console.log("Running Gradle: " + cmdline)
 
-    exec(cmdline, function(err, stdout, stderr) {
-        console.log(stderr)
-        if (err) {
-            console.log(stdout)
-            fail(err)
+    var running = false
+    function execGradle() {
+        if (running) return
+
+        running = true
+        console.log("\nRunning Gradle: " + cmdline)
+        console.time("Done Gradle")
+        var stdout = execSync(cmdline)
+        // console.log(stdout)
+        console.timeEnd("Done Gradle")
+        running = false
+    }
+
+    execGradle()
+
+    var deps = fs.readFileSync(path.join(root, 'build/kwp/__sources.txt'), "UTF-8").split("\n")
+    for (var i = 0; i < deps.length; i++) {
+        var t = deps[i].trim()
+        if (t.length > 0) {
+            fs.watch(t, {
+                recursive: true
+            }, execGradle)
         }
-        else {
-            // console.log(stdout)
-            var deps = fs.readFileSync(path.join(root, 'build/kwp/__deps.txt'), "UTF-8").split("\n")
+    }
 
-            for (var i = 0; i < deps.length; i++) {
-                var t = deps[i].trim()
-                if (t.length > 0) {
-                    loader.addContextDependency(t)
-                }
-            }
+    var aliasMap = {}
+    var modules = fs.readFileSync(path.join(root, 'build/kwp/__modules.txt'), "UTF-8").split("\n")
+    for (var i = 0; i < modules.length; i++) {
+        var line = modules[i].trim()
+        if (line.length > 0) {
+            var sep = line.indexOf(':')
+            var m_name = line.substring(0, sep).trim()
+            var m_path = line.substring(sep + 1).trim()
 
-            success(fs.readFileSync(path.join(root, 'build/kwp/__modules.js'), "UTF-8"))
-            console.timeEnd("Done Gradle")
+            aliasMap[m_name] = m_path
         }
-    })
+    }
+
+    compiler.resolvers.normal.apply(new ModuleAliasPlugin(aliasMap))
 }
+
+module.exports = KotlinWebpackPlugin
