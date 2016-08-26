@@ -56,7 +56,8 @@ KotlinWebpackPlugin.prototype.apply = function (compiler) {
         var t = deps[i].trim()
         if (t.length > 0) {
             fs.watch(t, {
-                recursive: true
+                recursive: true,
+                persistent: false
             }, execGradle)
         }
     }

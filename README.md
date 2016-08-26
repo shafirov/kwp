@@ -18,7 +18,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kwp:kwp:0.1.7"
+        classpath "org.jetbrains.kwp:kwp:0.1.8"
     }
 }
 ```
