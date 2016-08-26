@@ -28,8 +28,7 @@ Then for the project you have ```compileKotlin2Js``` apply the plugin:
     apply plugin: KWP
 ```
 
-This is it for gradle part of setup. Now you need to hook up a loader that comes with gradle into webpack.config.js and
-define ```Kotlin``` global via ProvidePlugin.
+This is it for gradle part of setup. Now you need to hook up plugin (that comes with gradle distro) into webpack.config.js
 
 ```javascript
 var KotlinWebpackPlugin = require('./build/kwp/kwp')
