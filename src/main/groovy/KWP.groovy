@@ -40,8 +40,10 @@ class KWP implements Plugin<Project> {
             writeSafely(new File(targetDir, "__modules.txt")) { buf ->
                 dependencies.each {jar ->
                     def m = unzipSafely(jar, targetDir)
-                    def moduleName = m.name.substring(0, m.name.lastIndexOf('.'))
-                    buf.append("${ moduleName}:${normalizedAbsolutePath(m)}\n")
+                    if (m != null) {
+                        def moduleName = m.name.substring(0, m.name.lastIndexOf('.'))
+                        buf.append("${moduleName}:${normalizedAbsolutePath(m)}\n")
+                    }
                 }
             }
 
@@ -89,8 +91,11 @@ class KWP implements Plugin<Project> {
                 if (targets == 3) break
             }
 
-            timestampFile.text = ""
+            timestampFile.text = targetFile?.absolutePath ?: "notfound.js"
             timestampFile.setLastModified(jar.lastModified())
+        }
+        else {
+            targetFile = new File(timestampFile.text)
         }
 
         return targetFile
