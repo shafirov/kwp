@@ -41,9 +41,6 @@ class KWP implements Plugin<Project> {
                 dependencies.each {jar ->
                     def m = unzipSafely(jar, targetDir)
                     def moduleName = m.name.substring(0, m.name.lastIndexOf('.'))
-                    if (moduleName.startsWith("kotlin-js-library")) {
-                        moduleName = "kotlin"
-                    }
                     buf.append("${ moduleName}:${normalizedAbsolutePath(m)}\n")
                 }
             }
@@ -71,8 +68,9 @@ class KWP implements Plugin<Project> {
     }
 
     File unzipSafely(File jar, File targetFolder) {
-        def targetFile = new File(targetFolder, removeSuffix(jar.name, ".jar") + ".js")
-        if (!targetFile.exists() || targetFile.lastModified() != jar.lastModified()) {
+        def timestampFile = new File(targetFolder, jar.name + ".timestamp")
+        def targetFile = null
+        if (!timestampFile.exists() || timestampFile.lastModified() != jar.lastModified()) {
             ZipFile zip = new ZipFile(jar)
             def targets = 0
             for (zipEntry in zip.entries()) {
@@ -83,6 +81,7 @@ class KWP implements Plugin<Project> {
                     targets++
                 }
                 else if (zipEntry.name.endsWith(".js")) {
+                    targetFile = new File(targetFolder, zipEntry.name)
                     targetFile.text = zip.getInputStream(zipEntry).text
                     targets++
                 }
@@ -90,7 +89,8 @@ class KWP implements Plugin<Project> {
                 if (targets == 3) break
             }
 
-            targetFile.setLastModified(jar.lastModified())
+            timestampFile.text = ""
+            timestampFile.setLastModified(jar.lastModified())
         }
 
         return targetFile
