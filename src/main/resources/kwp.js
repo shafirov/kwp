@@ -2,6 +2,7 @@ var path = require("path");
 var fs = require('fs')
 var execSync = require('child_process').execSync
 var isWin = /^win/.test(process.platform);
+var isMacOs = 'darwin' == process.platform;
 
 /**
  * Node-watch npm package https://github.com/yuanchuan/node-watch
@@ -414,7 +415,8 @@ KotlinWebpackPlugin.prototype.apply = function (compiler) {
     for (var i = 0; i < deps.length; i++) {
         var t = deps[i].trim()
         if (t.length > 0) {
-            watch(t, {
+            var watchFn = isWin || isMacOs ? fs.watch : watch
+            watchFn(t, {
                 recursive: true,
                 persistent: false
             }, execGradle)
