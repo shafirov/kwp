@@ -10,7 +10,6 @@ class KWP implements Plugin<Project> {
     void installKwp(File targetDir, boolean force) {
         def file = new File(targetDir, "kwp.js")
         if (!file.exists() || force) {
-            targetDir.mkdirs()
             writeSafely(file) { buf ->
                 buf.append(loaderText)
             }
@@ -34,8 +33,6 @@ class KWP implements Plugin<Project> {
             def dependencies = new LinkedHashSet<File>()
             def sources = new LinkedHashSet<String>()
             collectDependencies(project, sources, dependencies)
-
-            targetDir.mkdirs()
 
             writeSafely(new File(targetDir, "__modules.txt")) { buf ->
                 dependencies.each {jar ->
@@ -79,12 +76,12 @@ class KWP implements Plugin<Project> {
                 if (zipEntry.isDirectory()) continue
 
                 if (zipEntry.name.endsWith(".meta.js") || zipEntry.name.endsWith('.js.map')) {
-                    new File(targetFolder, zipEntry.name).text = zip.getInputStream(zipEntry).text
+                    writeSafely(new File(targetFolder, zipEntry.name), zip.getInputStream(zipEntry).text)
                     targets++
                 }
                 else if (zipEntry.name.endsWith(".js")) {
                     targetFile = new File(targetFolder, zipEntry.name)
-                    targetFile.text = zip.getInputStream(zipEntry).text
+                    writeSafely(targetFile, zip.getInputStream(zipEntry).text)
                     targets++
                 }
 
@@ -106,11 +103,17 @@ class KWP implements Plugin<Project> {
         return str
     }
 
+    void writeSafely(File file, String contents) {
+        if (!file.exists() || file.text != contents) {
+            file.getParentFile().mkdirs()
+            file.text = contents
+        }
+    }
+
     void writeSafely(File file, Closure<StringBuilder> builder) {
         def buffer = new StringBuilder()
         builder(buffer)
-        def contents = buffer.toString()
-        if (!file.exists() || file.text != contents) file.text = contents
+        writeSafely(file, buffer.toString())
     }
 
     String normalizedAbsolutePath(File file) {
